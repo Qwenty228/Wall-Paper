@@ -1,3 +1,4 @@
+import numpy
 import win32con, win32gui
 import pygame as pg
 import ctypes
@@ -124,16 +125,34 @@ def gradientRect( window, left_colour, right_colour, target_rect ):
     colour_rect = pg.transform.smoothscale( colour_rect, ( target_rect.width, target_rect.height ) )  # stretch!
     window.blit( colour_rect, target_rect )                                    # paint it
 
+
+#gradientRect(screen, (i%255, (2*i)%255, (3*i)%255), ((3*i)%255, (2*i)%255, i%255), pg.Rect(win32gui.GetWindowRect(WorkerW)) )
+ 
+
+from test import get_frame
+
+
 running = True
-i = 0
+frame = get_frame()
+
+first_frame  = next(frame)
+
+ratio = min([l/s for s, l in zip(first_frame.shape[:2], pg.display.get_window_size())])
+
+new_size = [i*ratio for i in first_frame.shape[:2]]
+
+offset = ((numpy.fromiter(pg.display.get_window_size(), dtype=int) - numpy.fromiter(new_size, dtype=int) - numpy.array([0, 80]) )//2).tolist()
+
+print(offset)
+
 while running:
     try:
-        i += 1
         Clock.tick(60)
         pg.event.pump()
 
-        gradientRect(screen, (i%255, (2*i)%255, (3*i)%255), ((3*i)%255, (2*i)%255, i%255), pg.Rect(win32gui.GetWindowRect(WorkerW)) )
- 
+        image = pg.surfarray.make_surface(next(frame))
+        image = pg.transform.scale(image, new_size)
+        screen.blit(image, offset)
         pg.display.flip()
     except:
         running = False
