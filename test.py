@@ -13,7 +13,7 @@ _, tail = os.path.split(path)
 def get_frame():
     while True:
         for frame in vid:
-            yield np.rot90(frame)
+            yield np.rot90(frame)[::-1]
 
 
 

@@ -137,11 +137,11 @@ frame = get_frame()
 
 first_frame  = next(frame)
 
-ratio = min([l/s for s, l in zip(first_frame.shape[:2], pg.display.get_window_size())])
+ratio = max([l/s for s, l in zip(first_frame.shape[:2], pg.display.get_window_size())])
 
 new_size = [i*ratio for i in first_frame.shape[:2]]
 
-offset = ((numpy.fromiter(pg.display.get_window_size(), dtype=int) - numpy.fromiter(new_size, dtype=int) - numpy.array([0, 80]) )//2).tolist()
+offset = ((numpy.fromiter(pg.display.get_window_size(), dtype=int) - numpy.fromiter(new_size, dtype=int) )//2).tolist()
 
 print(offset)
 
