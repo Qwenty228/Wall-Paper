@@ -8,30 +8,55 @@ import imageio as iio
 from data.utils.config import VID_FILE_TYPES
 import asyncio
 
-from main import counting, draw
+from data.utils.wallpaper import WallPaper
+
 
 class AsyncTk(tkinter.Tk):
     "Basic Tk with an asyncio-compatible event loop"
-    def __init__(self):
+    def __init__(self, loop, update_interval):
         super().__init__()
-        self.running = True
-        self.runners = self.tk_loop()
+        self.wallpaper = WallPaper()
+        self.tasks = []
+        self.loop = loop
 
-    async def tk_loop(self):
-        "asyncio 'compatible' tk event loop?"
-        # Is there a better way to trigger loop exit than using a state vrbl?
-        while self.running:
-            self.update()
-            await asyncio.sleep(0.05) # obviously, sleep time could be parameterized
+        self._status = 'working'
 
-    def quit(self) -> None:
-        self.running = False
-        return super().quit()
-        
+        self.after(0, self.__update_asyncio, update_interval)
+        self.close_event = asyncio.Event()
 
-    async def run(self):
-        await asyncio.gather(self.runners)
-      
+    def __update_asyncio(self, interval):
+        self.loop.call_soon(self.loop.stop)
+        self.loop.run_forever()
+        if self.close_event.is_set():
+            self.quit()
+        self.after(int(interval * 1000), self.__update_asyncio, interval)
+
+    async def status_label_task(self):
+        """
+        This keeps the Status label updated with an alternating number of dots so that you know the UI isn't
+        frozen even when it's not doing anything.
+        """
+        dots = ''
+        while True:
+            self.title('Status: %s%s' % (self._status, dots))
+            #print(asyncio.all_tasks())
+            await asyncio.sleep(0.5)
+            dots += '.'
+            if len(dots) >= 6:
+                dots = ''
+
+    def initialize(self):
+        coros = (
+            self.status_label_task(),
+            # additional network-bound tasks
+        )
+        for coro in coros:
+            self.tasks.append(self.loop.create_task(coro))
+
+    def on_closing(self, event=0):
+        self.close_event.set()
+        self.destroy()
+    
 
 class App(customtkinter.CTk, AsyncTk):
 #class App(tkinter.Tk):
@@ -50,21 +75,27 @@ class App(customtkinter.CTk, AsyncTk):
             self._thumbnail[video] = thumbnail
         return thumbnail
 
-    def __init__(self):
-        super().__init__()
+    
+
+    def __init__(self, loop, update_interval = 1/20):
+        super().__init__(loop=loop, update_interval=update_interval)
 
         self._thumbnail = {}
         self._local = None
-        self._select = None
         self.task = None
+
  
         customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
         customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
-        self.title("CustomTkinter complex_example.py")
+        
+      
         set_icon(self)
         self.geometry(f"{App.WIDTH}x{App.HEIGHT}")
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # call .on_closing() when app gets closed
         
+
+        
+
         menu(self)
 
 
@@ -167,7 +198,7 @@ class App(customtkinter.CTk, AsyncTk):
                                 text=vid.split('.')[0][:10], text_color='white', corner_radius=5, border_width=3,
                                 compound="top", fg_color="gray25", hover_color="gray30",  border_color= 'gray10')
                 button.grid(row=(i//4), column=(i%4), sticky='ew')
-                button.configure(command=lambda btn=button: self.button_event(btn, fullpath))
+                button.configure(command=lambda btn=button, p=fullpath: self.button_event(btn, p))
 
     def get_video(self, button: customtkinter.CTkButton):
         if self._local and button.border_color == 'gray10':
@@ -181,11 +212,12 @@ class App(customtkinter.CTk, AsyncTk):
             button.configure(compound='top')
             self._local = video
             self.button_event(button, self._local)
+
+
             
 
     def button_event(self, button: customtkinter.CTkButton=None, path=None):
         if path:
-            self._select = button.text
             for widget in self.frame_info.winfo_children():
                 if widget == button:
                     button.configure(border_color='blue')
@@ -194,16 +226,18 @@ class App(customtkinter.CTk, AsyncTk):
             
             if self.task:
                 self.task.cancel()
-            self.task = asyncio.create_task(draw())
+            self.task = self.loop.create_task(self.wallpaper.draw(self.radio_var.get(), path))
             
-            
+
 
     def change_appearance_mode(self, new_appearance_mode):
         customtkinter.set_appearance_mode(new_appearance_mode)
 
-    def on_closing(self, event=0):
-        self.quit()
-        #self.destroy()
+
+    async def countint(self):
+        while True:
+            print('c')
+            await asyncio.sleep(2)
 
 def set_icon(root: tkinter.Tk):
     # file = r'images/logo.png'
@@ -237,9 +271,22 @@ def menu(root: tkinter.Tk):
     root.config(menu=menubar)
 
 
-if __name__ == "__main__":
-    async def main():
-        app = App()
-        await app.run()
 
-    asyncio.run(main())
+
+if __name__ == "__main__":
+    async def clock():
+        i = 0
+        while True:
+            i +=1 
+            print(i)
+            await asyncio.sleep(1)
+    gui = App(asyncio.get_event_loop())
+    gui.initialize()
+    gui.mainloop()
+
+
+    # async def main():
+    #     app = App()
+    #     finish, unfinish = await asyncio.wait([app.run(), clock()], return_when=asyncio.FIRST_COMPLETED)
+    
+    #asyncio.run(main())
