@@ -129,6 +129,7 @@ dmypy.json
 .pyre/
 
 
-window_manager.py
 
-.gif
+data/videos
+
+test.py
