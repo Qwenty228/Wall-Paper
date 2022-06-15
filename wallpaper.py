@@ -1,7 +1,11 @@
-import numpy
+import asyncio
 import win32con, win32gui
 import pygame as pg
 import ctypes
+
+from data.template.gradient import G
+from data.template.video import V
+
 
 WorkerW = None
 user32 = ctypes.windll.user32
@@ -98,67 +102,61 @@ def toggle_workerw_visibility(hidden):
     else:
         win32gui.ShowWindow(WorkerW, 0)
         hidden = True
+    return hidden
 
 
 
-get_workerw()
-
-win32gui.ShowWindow(WorkerW, win32con.SW_MAXIMIZE)
-
-print(win32gui.GetWindowRect(WorkerW))
 
 
-screen = pg.display.set_mode((0, 0), flags=pg.HIDDEN|pg.SRCALPHA, vsync=1)
-win32gui.SetParent(pg.display.get_wm_info()['window'], WorkerW)
-screen = pg.display.set_mode((0, 0), flags=pg.SHOWN|pg.SRCALPHA, vsync=1)
+async def counting():
+    i = 0
+    hidden = False
+    while True:
+        i += 1
+        print(i)
+        #hidden = toggle_workerw_visibility(hidden)
+        await asyncio.sleep(0.7)
 
 
-#surface = pg.Surface(pg.display.get_window_size(), pg.SRCALPHA)
-
-Clock = pg.time.Clock()
-
-def gradientRect( window, left_colour, right_colour, target_rect ):
-    """ Draw a horizontal-gradient filled rectangle covering <target_rect> """
-    colour_rect = pg.Surface( ( 2, 2 ) )                                   # tiny! 2x2 bitmap
-    pg.draw.line( colour_rect, left_colour,  ( 0,0 ), ( 0,1 ) )            # left colour line
-    pg.draw.line( colour_rect, right_colour, ( 1,0 ), ( 1,1 ) )            # right colour line
-    colour_rect = pg.transform.smoothscale( colour_rect, ( target_rect.width, target_rect.height ) )  # stretch!
-    window.blit( colour_rect, target_rect )                                    # paint it
-
-
-#gradientRect(screen, (i%255, (2*i)%255, (3*i)%255), ((3*i)%255, (2*i)%255, i%255), pg.Rect(win32gui.GetWindowRect(WorkerW)) )
- 
-
-from test import get_frame
-
-
-running = True
-frame = get_frame()
-
-first_frame  = next(frame)
-
-ratio = max([l/s for s, l in zip(first_frame.shape[:2], pg.display.get_window_size())])
-
-new_size = [i*ratio for i in first_frame.shape[:2]]
-
-offset = ((numpy.fromiter(pg.display.get_window_size(), dtype=int) - numpy.fromiter(new_size, dtype=int) )//2).tolist()
-
-print(offset)
-
-while running:
-    try:
-        Clock.tick(60)
-        pg.event.pump()
-
-        image = pg.surfarray.make_surface(next(frame))
-        image = pg.transform.scale(image, new_size)
-        screen.blit(image, offset)
-        pg.display.flip()
-    except:
-        running = False
-
-_kill_workerw()
+async def draw():
     
-print('quit')
-quit()
-    
+
+    get_workerw()
+
+    win32gui.ShowWindow(WorkerW, win32con.SW_MAXIMIZE)
+
+    #print(win32gui.GetWindowRect(WorkerW))
+
+    screen = pg.display.set_mode((0, 0), flags=pg.HIDDEN|pg.SRCALPHA, vsync=1)
+    win32gui.SetParent(pg.display.get_wm_info()['window'], WorkerW)
+    screen = pg.display.set_mode((0, 0), flags=pg.SHOWN|pg.SRCALPHA, vsync=1)
+
+    grad = G(screen)
+    vid = V(screen)
+
+    Clock = pg.time.Clock()
+
+    running = True
+    while running:
+        #print('running')
+        try:
+            Clock.tick(60)
+            pg.event.pump()
+
+            vid.run()
+
+            pg.display.flip()
+        except:
+            running = False
+        await asyncio.sleep(0)
+
+    _kill_workerw()
+        
+    print('quit')
+    quit()
+        
+
+if __name__ == '__main__':
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(asyncio.wait([counting(), draw()]))
+    loop.close()
