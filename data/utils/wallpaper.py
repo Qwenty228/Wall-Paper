@@ -31,6 +31,7 @@ class WallPaper:
         #i = 0
         while running:
             self.mainClock.tick(FPS)
+            #print(self.mainClock.get_fps())
             #i += 1
             #print(i)
             #print('Running')

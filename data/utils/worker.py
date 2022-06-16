@@ -25,8 +25,8 @@ class Window:
             #print(f"SHELLDLL_DefView found at {hex(desktop_icons)}")
             self.WorkerW = win32gui.FindWindowEx(0, hwnd, "WorkerW", None)
             if extra and self.WorkerW:
-                pass
-                #print(f"WorkerW hwnd {hex(self.WorkerW)}")
+                #pass
+                print(f"WorkerW hwnd {hex(self.WorkerW)}")
         
 
     def get_workerw(self):
