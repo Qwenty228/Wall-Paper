@@ -1,4 +1,8 @@
 
+WIDTH = 780
+HEIGHT = 520
+
+
 FPS = 24
 
 VID_FILE_TYPES = [".webm", ".mkv", '.flv', '.vob', 

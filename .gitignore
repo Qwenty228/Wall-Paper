@@ -132,4 +132,5 @@ dmypy.json
 
 data/videos
 
+test_worker.py
 test.py

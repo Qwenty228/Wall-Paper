@@ -8,7 +8,7 @@ class Window:
         user32 = ctypes.windll.user32
         user32.SetProcessDPIAware()
         self.WorkerW = None
-        self.hidden = False
+        self.hidden = True
 
 
     def set_workerw(self, hwnd, extra):

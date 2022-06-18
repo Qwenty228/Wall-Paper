@@ -1,4 +1,4 @@
-from inspect import getmembers, isclass, isfunction
+from inspect import getmembers, isclass
 import tkinter
 import tkinter.messagebox
 from tkinter import filedialog
@@ -9,12 +9,14 @@ import imageio as iio
 from data.utils.config import VID_FILE_TYPES
 import asyncio
 
+
 from data.utils.application_helper import *
+from data.utils.config import HEIGHT, WIDTH
 from data.utils import pages
 
 class App(customtkinter.CTk, AsyncTk):
-    WIDTH = 780
-    HEIGHT = 520
+    WIDTH = WIDTH
+    HEIGHT = HEIGHT
 
     def get_first_frame(self, video):
         if (thumbnail := self._thumbnail.get(video)) is None:
@@ -32,10 +34,14 @@ class App(customtkinter.CTk, AsyncTk):
     def __init__(self, loop, update_interval = 1/20):
         super().__init__(loop=loop, update_interval=update_interval)
 
+        self.table = set_up_db()
         self._thumbnail = {}
         self._pages = {}
         self._local = None
+        self._prev_local = None
         self.task = None
+        self.radio_var = tkinter.IntVar(value=0)
+        self.toggle_var = True
 
  
         customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
@@ -47,14 +53,11 @@ class App(customtkinter.CTk, AsyncTk):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # call .on_closing() when app gets closed
         
         menu(self)
-
         # ============ frame_left ============
 
         # configure grid layout (2x1)
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
-
-        self.radio_var = tkinter.IntVar(value=0)
 
         left_side(self)
 
@@ -67,20 +70,16 @@ class App(customtkinter.CTk, AsyncTk):
         self.frame_right.rowconfigure(( 1, 2, 3), weight=1)
         #frame_right.rowconfigure(7, weight=10)
         self.frame_right.rowconfigure(10, minsize=35)
-        self.frame_right.columnconfigure((1), weight=1)
+        self.frame_right.columnconfigure(1, weight=1)
         self.frame_right.columnconfigure(2, weight=0)
 
         customtkinter.CTkLabel(master=self.frame_right, text="select background:").grid(row=0, column=0, pady=0, padx=10)
 
-        # ============ frame_info ============
-        # self.frame_info = customtkinter.CTkFrame(master=frame_right)
-        # self.frame_info.grid(row=1, column=0, columnspan=2, rowspan=4, pady=0, padx=20, sticky="nsew")
-        
-        # # configure grid layout (1x1)
-        # self.frame_info.grid_columnconfigure((0,1,2, 3),weight=1)
-        # self.frame_info.grid_rowconfigure((0, 1, 2, 3), weight=1)
 
-        #self.frame_info.columnconfigure(0, weight=1)
+        switch_1 = customtkinter.CTkSwitch(master=self.frame_right, text='Live Wallpaper ON', variable=tkinter.IntVar(value=1))
+        switch_1.grid(row=0, column=1, sticky='ns', pady=5)
+        switch_1.configure(command=lambda s=switch_1: self.toggle(s))
+
         self.set_up_frame()
 
     def set_up_frame(self):
@@ -111,9 +110,14 @@ class App(customtkinter.CTk, AsyncTk):
             button.configure(compound='top')
             self._local = video
             self.button_event(button, self._local)
-
-
             
+            if str(video) not in self.table.get()['path']:
+                self.table.insert(data={"path": str(video)})
+                if frame := self._pages.get(0):
+                    if self._prev_local:
+                        frame.add_button(self._prev_local)
+
+            self._prev_local = video
 
     def button_event(self, button: customtkinter.CTkButton=None, path=None):
         if path:
@@ -126,8 +130,13 @@ class App(customtkinter.CTk, AsyncTk):
             
             if self.task:
                 self.task.cancel()
+                self.taks = None
             self.task = self.loop.create_task(self.wallpaper.draw(self.radio_var.get(), path))
-            
+
+
+    def toggle(self, switch: customtkinter.CTkSwitch):
+        self.toggle_var = switch.check_state
+        self.wallpaper.pause()
 
 
     def change_appearance_mode(self, new_appearance_mode):

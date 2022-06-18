@@ -1,8 +1,18 @@
+import sqlite3
 from data.utils.wallpaper import WallPaper
 import asyncio, tkinter, customtkinter
+from corgidb import CorgiDB
 
 
-__all__ = ["AsyncTk", "set_icon", "menu", "left_side"]  
+
+
+
+
+
+__all__ = ["AsyncTk", "set_icon", "menu", "left_side", "set_up_db", "right_click_menu"]  
+
+
+
 
 class AsyncTk(tkinter.Tk):
     "Basic Tk with an asyncio-compatible event loop"
@@ -84,6 +94,13 @@ def menu(root: tkinter.Tk):
 
     root.config(menu=menubar)
 
+def right_click_menu(root: tkinter.Tk):
+    m = tkinter.Menu(root, tearoff=0)
+    m.add_command(label="Delete")
+
+    return m
+
+
 def left_side(self: tkinter.Tk):
     frame_left = customtkinter.CTkFrame(master=self,
                                                  width=180,
@@ -133,5 +150,17 @@ def left_side(self: tkinter.Tk):
     optionmenu_1.set("Dark")
 
 
+def set_up_db():
+    # Connect CorgiDB to db.sqlite
+    cdb = CorgiDB(database_path="data/url.sqlite")
 
+    try:
+        # Create tables if they don't exist
+        tb = cdb.utils.create_table(
+                name="video",
+                columns=[("path"     , str)])
 
+    except sqlite3.OperationalError as e:
+        # table already exists
+        tb = cdb.utils.get_table(name="video")
+    return tb

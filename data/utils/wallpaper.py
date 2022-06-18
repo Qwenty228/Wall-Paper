@@ -14,6 +14,7 @@ class WallPaper:
         self.wm.get_workerw()
         self.mainClock = pg.time.Clock()
         self._clip_surface()
+        self.running = True
 
 
     def _clip_surface(self):
@@ -22,21 +23,24 @@ class WallPaper:
         win32gui.SetParent(pg.display.get_wm_info()['window'], self.wm.WorkerW)
         self.screen = pg.display.set_mode((0, 0), flags=pg.SHOWN|pg.SRCALPHA, vsync=1)
 
+    def pause(self):
+        self.running = not self.running
+        self.wm.toggle_workerw_visibility()
 
     async def draw(self, mode, selection):
         if mode == 0:
             func = video.V(selection)
-        running = True
         pg.event.pump()
         #i = 0
-        while running:
+        while True:
             self.mainClock.tick(FPS)
             #print(self.mainClock.get_fps())
             #i += 1
             #print(i)
             #print('Running')
-            func.run()
-            pg.display.flip()
+            if self.running:
+                func.run()
+                pg.display.flip()
             await asyncio.sleep(0)
             #     pg.event.pump()
 
