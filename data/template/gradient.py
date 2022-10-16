@@ -3,8 +3,8 @@ import pygame as pg
 
 
 class G:
-    def __init__(self, display: pg.Surface) -> None:
-        self.display = display
+    def __init__(self) -> None:
+        self.display = pg.display.get_surface()
         self.r = 0
         self.g = 0
         self.b = 0

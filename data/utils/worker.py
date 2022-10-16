@@ -5,10 +5,20 @@ import win32con, win32gui
 
 class Window:
     def __init__(self) -> None:
-        user32 = ctypes.windll.user32
-        user32.SetProcessDPIAware()
+        self.user32 = ctypes.windll.user32
+        self.user32.SetProcessDPIAware()
         self.WorkerW = None
         self.hidden = True
+        self.full_screen_rect = (0, 0, self.user32.GetSystemMetrics(0), self.user32.GetSystemMetrics(1))
+
+
+    def is_full_screen(self):
+        try:
+            hWnd = self.user32.GetForegroundWindow()
+            rect = win32gui.GetWindowRect(hWnd)
+            return rect == self.full_screen_rect
+        except:
+            return False
 
 
     def set_workerw(self, hwnd, extra):

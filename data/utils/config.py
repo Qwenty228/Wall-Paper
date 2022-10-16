@@ -3,7 +3,7 @@ WIDTH = 780
 HEIGHT = 520
 
 
-FPS = 24
+FPS = 60
 
 VID_FILE_TYPES = [".webm", ".mkv", '.flv', '.vob', 
                     '.ogg', '.ogv', '.drc', '.gif',

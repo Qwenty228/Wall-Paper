@@ -1,6 +1,8 @@
 import pygame as pg
 import win32gui, win32con
 import asyncio
+import importlib
+
 from data.utils.config import FPS
 
 from data.utils.worker import Window
@@ -30,31 +32,16 @@ class WallPaper:
     async def draw(self, mode, selection):
         if mode == 0:
             func = video.V(selection)
+        elif mode == 1:
+            func = importlib.import_module(selection).G()
         pg.event.pump()
-        #i = 0
+        
         while True:
             self.mainClock.tick(FPS)
-            #print(self.mainClock.get_fps())
-            #i += 1
-            #print(i)
-            #print('Running')
+            # print(self.mainClock.get_fps())
+           
             if self.running:
                 func.run()
                 pg.display.flip()
             await asyncio.sleep(0)
-            #     pg.event.pump()
 
-            #     func.run()
-            
-            #     pg.display.flip()
-            # except Exception as e:
-            #     print(Exception)
-            #     running = False
-
-            # await asyncio.sleep(0)
-
-        # self.wm.kill_workerw()
-            
-        # print('quit')
-        # quit()
-            
