@@ -2,6 +2,7 @@ import pygame as pg
 import win32gui, win32con
 import asyncio
 import importlib
+import gc
 
 from data.utils.config import FPS
 
@@ -18,7 +19,6 @@ class WallPaper:
         self._clip_surface()
         self.running = True
 
-
     def _clip_surface(self):
         win32gui.ShowWindow(self.wm.WorkerW, win32con.SW_MAXIMIZE)
         self.screen = pg.display.set_mode((0, 0), flags=pg.HIDDEN|pg.SRCALPHA, vsync=1)
@@ -31,6 +31,8 @@ class WallPaper:
 
     async def draw(self, mode, selection):
         if mode == 0:
+            gc.collect()
+
             func = video.V(selection)
         elif mode == 1:
             func = importlib.import_module(selection).G()

@@ -1,21 +1,18 @@
 import sqlite3
 from data.utils.wallpaper import WallPaper
-import asyncio, tkinter, customtkinter
+import asyncio
+import tkinter
+import customtkinter
 from corgidb import CorgiDB
 
 
-
-
-
-
-
-__all__ = ["AsyncTk", "set_icon", "menu", "left_side", "set_up_db", "right_click_menu"]  
-
-
+__all__ = ["AsyncTk", "set_icon", "menu",
+           "left_side", "set_up_db", "right_click_menu"]
 
 
 class AsyncTk(tkinter.Tk):
     "Basic Tk with an asyncio-compatible event loop"
+
     def __init__(self, loop, update_interval):
         super().__init__()
         self.wallpaper = WallPaper()
@@ -42,7 +39,7 @@ class AsyncTk(tkinter.Tk):
         dots = ''
         while True:
             self.title('Status: %s%s' % (self._status, dots))
-            #print(asyncio.all_tasks())
+            # print(asyncio.all_tasks())
             await asyncio.sleep(1)
             dots += '.'
             if len(dots) >= 6:
@@ -56,11 +53,10 @@ class AsyncTk(tkinter.Tk):
         for coro in coros:
             self.tasks.append(self.loop.create_task(coro))
 
-    def on_closing(self, event=0):
+    def on_closing(self, event=0):           
         self.close_event.set()
         self.wallpaper.wm.kill_workerw()
         self.destroy()
-    
 
 
 def set_icon(root: tkinter.Tk):
@@ -69,30 +65,32 @@ def set_icon(root: tkinter.Tk):
     # img.save('images/icon.ico',format = 'ICO', sizes=[(32,32)])
     root.iconbitmap('data/images/icon.ico')
 
+
 def menu(root: tkinter.Tk):
-    menubar = tkinter.Menu(root, background='blue')  
-    file = tkinter.Menu(menubar, tearoff=0, foreground='black') 
-    file.add_command(label="New")  
-    file.add_command(label="Open")  
-    file.add_command(label="Save")  
-    file.add_command(label="Save as")    
-    file.add_separator()  
-    file.add_command(label="Exit", command=root.quit)  
-    menubar.add_cascade(label="File", menu=file)  
+    menubar = tkinter.Menu(root, background='blue')
+    file = tkinter.Menu(menubar, tearoff=0, foreground='black')
+    file.add_command(label="New")
+    file.add_command(label="Open")
+    file.add_command(label="Save")
+    file.add_command(label="Save as")
+    file.add_separator()
+    file.add_command(label="Exit", command=root.quit)
+    menubar.add_cascade(label="File", menu=file)
 
-    edit = tkinter.Menu(menubar, tearoff=0)  
-    edit.add_command(label="Undo")  
-    edit.add_separator()     
-    edit.add_command(label="Cut")  
-    edit.add_command(label="Copy")  
-    edit.add_command(label="Paste")  
-    menubar.add_cascade(label="Edit", menu=edit)  
+    edit = tkinter.Menu(menubar, tearoff=0)
+    edit.add_command(label="Undo")
+    edit.add_separator()
+    edit.add_command(label="Cut")
+    edit.add_command(label="Copy")
+    edit.add_command(label="Paste")
+    menubar.add_cascade(label="Edit", menu=edit)
 
-    help = tkinter.Menu(menubar, tearoff=0)  
-    help.add_command(label="About", command=root.button_event)  
-    menubar.add_cascade(label="Help", menu=help)  
+    help = tkinter.Menu(menubar, tearoff=0)
+    help.add_command(label="About", command=root.button_event)
+    menubar.add_cascade(label="Help", menu=help)
 
     root.config(menu=menubar)
+
 
 def right_click_menu(root: tkinter.Tk):
     m = tkinter.Menu(root, tearoff=0)
@@ -103,48 +101,47 @@ def right_click_menu(root: tkinter.Tk):
 
 def left_side(self: tkinter.Tk):
     frame_left = customtkinter.CTkFrame(master=self,
-                                                 width=180,
-                                                 corner_radius=0)
+                                        width=180,
+                                        corner_radius=0)
     frame_left.grid(row=0, column=0, sticky="nswe")
 
     # configure grid layout (1x11)
-    frame_left.grid_rowconfigure(0, minsize=10)   # empty row with minsize as spacing
+    # empty row with minsize as spacing
+    frame_left.grid_rowconfigure(0, minsize=10)
     frame_left.grid_rowconfigure(5, weight=1)  # empty row as spacing
-    frame_left.grid_rowconfigure(8, minsize=20)    # empty row with minsize as spacing
-    frame_left.grid_rowconfigure(11, minsize=10)  # empty row with minsize as spacing
+    # empty row with minsize as spacing
+    frame_left.grid_rowconfigure(8, minsize=20)
+    # empty row with minsize as spacing
+    frame_left.grid_rowconfigure(11, minsize=10)
 
     label_1 = customtkinter.CTkLabel(master=frame_left,
-                                            text="Background\nSelections",
-                                            text_font=("Roboto Medium", -16))  # font name and size in px
+                                     text="Background\nSelections",
+                                     text_font=("Roboto Medium", -16))  # font name and size in px
     label_1.grid(row=1, column=0, pady=10, padx=10)
 
-
-    
-    radio_button_1 = customtkinter.CTkRadioButton(master=frame_left, text='Videos'.ljust(11, 'ㅤ') ,
-                                                        variable=self.radio_var,
-                                                        command=self.change_frame,
-                                                        value=0)
+    radio_button_1 = customtkinter.CTkRadioButton(master=frame_left, text='Videos'.ljust(11, 'ㅤ'),
+                                                  variable=self.radio_var,
+                                                  command=self.change_frame,
+                                                  value=0)
     radio_button_1.grid(row=2, column=0, pady=10, padx=20, sticky="nw")
 
     radio_button_2 = customtkinter.CTkRadioButton(master=frame_left, text='Templates'.ljust(11, 'ㅤ'),
-                                                        variable=self.radio_var,
-                                                        command=self.change_frame,
-                                                        value=1)
+                                                  variable=self.radio_var,
+                                                  command=self.change_frame,
+                                                  value=1)
     radio_button_2.grid(row=3, column=0, pady=10, padx=20, sticky="nw")
 
     radio_button_3 = customtkinter.CTkRadioButton(master=frame_left, text='Coming Soon!'.ljust(11, 'ㅤ'),
-                                                        variable=self.radio_var,
-                                                        command=self.change_frame,
-                                                        value=2)
+                                                  variable=self.radio_var,
+                                                  command=self.change_frame,
+                                                  value=2)
     radio_button_3.grid(row=4, column=0, pady=10, padx=20, sticky="nw")
 
-
-
-
-    customtkinter.CTkLabel(master=frame_left, text="Appearance Mode:").grid(row=9, column=0, pady=0, padx=20, sticky="w")
+    customtkinter.CTkLabel(master=frame_left, text="Appearance Mode:").grid(
+        row=9, column=0, pady=0, padx=20, sticky="w")
     optionmenu_1 = customtkinter.CTkOptionMenu(master=frame_left,
-                                                    values=["Light", "Dark"],
-                                                    command=self.change_appearance_mode)
+                                               values=["Light", "Dark"],
+                                               command=self.change_appearance_mode)
     optionmenu_1.grid(row=10, column=0, pady=10, padx=20, sticky="w")
 
     optionmenu_1.set("Dark")
@@ -157,8 +154,8 @@ def set_up_db():
     try:
         # Create tables if they don't exist
         tb = cdb.utils.create_table(
-                name="video",
-                columns=[("path"     , str)])
+            name="video",
+            columns=[("path", str)])
 
     except sqlite3.OperationalError as e:
         # table already exists

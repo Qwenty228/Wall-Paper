@@ -53,6 +53,9 @@ class Page1(customtkinter.CTkFrame):
         button.grid(row=row, column=col, sticky='ew')
         button.canvas.bind('<Button-3>', lambda e, c=self.controller,
                            b=button: right_click_menu(e, c, b))
+        button.image_label.bind('<Button-3>', lambda e, c=self.controller,
+                           b=button: right_click_menu(e, c, b))
+
         button.configure(command=lambda btn=button,
                          p=fullpath: self.controller.button_event(btn, p))
 
