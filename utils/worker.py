@@ -3,7 +3,7 @@ import win32con, win32gui
 
 
 
-class Window:
+class Worker:
     def __init__(self) -> None:
         self.user32 = ctypes.windll.user32
         self.user32.SetProcessDPIAware()
