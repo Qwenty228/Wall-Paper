@@ -71,9 +71,11 @@ class Renderer:
             display.fill('black')
             dt = self.mainClock.tick(FPS)*0.001
             self.time += dt
-            self.animation.update(surf=display, dt=dt, aspect_ratio=aspect_ratio)
+            img = self.animation.update(surf=display, dt=dt, aspect_ratio=aspect_ratio)
+            if img:
+                display = img
             if self.debug:
-                self.font.render_to(display, (250*aspect_ratio, 0), f'FPS: {self.mainClock.get_fps():.2f}', 'white')
+                self.font.render_to(display, (0.5*WIDTH*aspect_ratio, 0), f'FPS: {self.mainClock.get_fps():.2f}', 'white')
                 frame_tex = self.surf2tex(display)
             else:
                 frame_tex = self.surf2tex(display, self.animation.mode)    

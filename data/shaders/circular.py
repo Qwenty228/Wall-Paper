@@ -39,7 +39,7 @@ void main(){
 
         finalColor += col * d;
     }
-
+    
     f_color = vec4(finalColor, 1.0); // sample texture, uvs use color from the texture to asign to the fragment
 }
 '''
