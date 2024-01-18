@@ -12,8 +12,9 @@ from .settings import *
 
 
 class Renderer:
-    def __init__(self, debug, animation: BaseAnim) -> None:
+    def __init__(self, debug, animation: BaseAnim, app) -> None:
         pg.freetype.init()
+        self.tk_app = app
         self.animation = animation
         self.wm = Worker()
         self.wm.get_workerw()
@@ -24,7 +25,7 @@ class Renderer:
         self.font = pg.freetype.SysFont('Arial', 30)
 
         self.debug = debug
-
+        self.running = True
 
     def _clip_surface(self):
         win32gui.ShowWindow(self.wm.WorkerW, win32con.SW_MAXIMIZE)
@@ -67,7 +68,7 @@ class Renderer:
         display = pg.Surface((WIDTH* aspect_ratio, HEIGHT))
 
         
-        while True:
+        while self.running:
             display.fill('black')
             dt = self.mainClock.tick(FPS)*0.001
             self.time += dt
@@ -87,6 +88,6 @@ class Renderer:
                 
 
             pg.display.flip()
-            frame_tex.release()
+            # frame_tex.release()
             
     
