@@ -1,4 +1,4 @@
-FPS = 30
+FPS = 60
 
 WIDTH, HEIGHT = 500, 500
 
