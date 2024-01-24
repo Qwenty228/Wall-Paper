@@ -4,20 +4,19 @@ import traceback
 
 from utils.gui import App
 from utils.renderer import Renderer
-from data.shaders.fullspectrumcyber import Anim
-# from data.template.doomfire import Anim
-# from data.videos.videos import Anim
+
 
 
 
 if __name__ == "__main__":
     try:
-        app = App()
-        r = Renderer(debug=True, animation=Anim(), app=None)
-
-        t1 = threading.Thread(target=r.animate)
-        t1.start()
+        e = threading.Event()
+        r = Renderer(debug=True, event=e)
+        app = App(r, e)        
+       
         app.mainloop()
+        if r.on_pause:
+            e.set()
         r.running = False
         print('done')
         

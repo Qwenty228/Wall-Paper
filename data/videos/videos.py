@@ -2,6 +2,7 @@ import imageio.v3 as iio
 import pygame as pg
 import numpy as np
 from data.base import BaseAnim
+import gc 
 
 
 class Anim(BaseAnim):
@@ -14,6 +15,8 @@ class Anim(BaseAnim):
         except StopIteration:
             self.img_generator = iio.imiter("test/Karuizawa Kei Winter Blanc-1.m4v")
             img = next(self.img_generator)
+            gc.collect()
+       
         return pg.surfarray.make_surface(np.rot90(np.fliplr(img)))
 
 

@@ -2,13 +2,12 @@ import ctypes
 import win32con, win32gui
 
 
-
 class Worker:
     def __init__(self) -> None:
         self.user32 = ctypes.windll.user32
         self.user32.SetProcessDPIAware()
         self.WorkerW = None
-        self.hidden = True
+        self.hidden = False
         self.full_screen_rect = (0, 0, self.user32.GetSystemMetrics(0), self.user32.GetSystemMetrics(1))
 
 
@@ -77,10 +76,8 @@ class Worker:
 
     def toggle_workerw_visibility(self):
         self.hidden = not self.hidden  
-        win32gui.EnumWindows(self.set_workerw, False)
         if self.hidden:
-            win32gui.ShowWindow(self.WorkerW, 1)
-        else:
             win32gui.ShowWindow(self.WorkerW, 0)
-         
-        
+        else:
+            win32gui.ShowWindow(self.WorkerW, 1)        
+        print(f'workerw visibility: {not self.hidden}')
