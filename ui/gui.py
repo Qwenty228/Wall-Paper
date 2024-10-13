@@ -2,8 +2,9 @@ import tkinter
 import tkinter.messagebox
 import customtkinter
 import glob
+import os 
 
-from .spawner import toggle_engine
+from .spawner import toggle_engine, PID_FILE
 
 # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_appearance_mode("System")
@@ -21,9 +22,6 @@ def get_animations():
 
 animations = get_animations()
 
-
-def button_callback(app: 'App'):
-    toggle_engine()
     
 
 class App(customtkinter.CTk):
@@ -62,9 +60,10 @@ class App(customtkinter.CTk):
                                                                command=self.change_scaling_event)
         self.scaling_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 20))
 
-        button = customtkinter.CTkButton(
-            self, text="my button", command=lambda: button_callback(self))
-        button.grid(row=0, column=0, padx=20, pady=20)
+ 
+        switch = customtkinter.CTkSwitch(self, text="engine switch", command=lambda : toggle_engine())
+        switch.grid(row=0, column=0, padx=20, pady=20)
+        switch._check_state = os.path.exists(PID_FILE)
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)
