@@ -1,7 +1,7 @@
 import time
 import os
 
-COUNTER_FILE = "data/counter.txt"
+COUNTER_FILE = "anim/data/counter.txt"
 
 # Read the current counter value from the file
 def read_counter():

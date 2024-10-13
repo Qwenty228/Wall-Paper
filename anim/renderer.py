@@ -8,15 +8,14 @@ import win32gui
 import importlib
 from typing import Literal
 
-from .worker import Worker
-from data.base import BaseAnim
-from .settings import *
+from utils.worker import Worker
+from utils.settings import *
+
 
 
 class Renderer:
-    def __init__(self, debug, event) -> None:
+    def __init__(self, debug) -> None:
         pg.freetype.init()
-        self.e = event
         self.debug = debug
         self.font = pg.freetype.SysFont('Arial', 30)
 
@@ -89,11 +88,8 @@ class Renderer:
                 
             
             if self.on_pause:
-                self.e.wait()
-                self.e.clear()
                 # print('unpaused')
                 self.wm.toggle_workerw_visibility()
-                # print()
                 continue
             
             display.fill('black')
@@ -117,3 +113,17 @@ class Renderer:
 
             pg.display.flip()
             frame_tex.release()
+
+
+
+if __name__ == '__main__':
+    try:
+        r = Renderer(debug=True)
+        r.animate()
+        pg.quit()
+        
+    except Exception as e:
+        print(e)
+    finally:
+        r.wm.kill_workerw()
+        quit()

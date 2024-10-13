@@ -8,8 +8,8 @@ import subprocess
 import signal
 import ctypes
 
-from data.shaders.fullspectrumcyber import Anim
-from data.template.doomfire import Anim as Anim2
+from anim.data.shaders.fullspectrumcyber import Anim
+from anim.data.template.doomfire import Anim as Anim2
 # from data.videos.videos import Anim as Anim2
 
 # Modes: "System" (standard), "Dark", "Light"
@@ -28,8 +28,8 @@ def get_animations():
 
 animations = get_animations()
 
-STATE_FILE = "data/process_state.pkl"
-COUNTER_FILE = "data/counter.txt"
+STATE_FILE = "anim/data/process_state.pkl"
+COUNTER_FILE = "anim/data/counter.txt"
 SCRIPT_FILE = r"ui\background.py"
 
 # Load the saved state from file
@@ -107,7 +107,7 @@ def button_callback(app: 'App'):
 class App(customtkinter.CTk):
     ind = 0
 
-    def __init__(self, renderer, thread_event):
+    def __init__(self):
         super().__init__()
 
         self.bg_task_state = load_state()
