@@ -19,8 +19,6 @@ SHADERS_DIR = "anim/data/shaders"
 VIDEOS_DIR = "anim/data/videos"
 
 class App(customtkinter.CTk):
-    ind = 0
-
     def __init__(self):
         super().__init__()
 
@@ -99,10 +97,11 @@ class App(customtkinter.CTk):
 
     def display_files_in_frame(self, directory):
         # Get the files in the specified directory and create buttons for them
-        for filename in os.listdir(directory):
+        for i, filename in enumerate(os.listdir(directory)):
             if os.path.isfile(os.path.join(directory, filename)) and filename.endswith(".py"):
-                button = customtkinter.CTkButton(self.content_frame, text=filename)
-                button.pack(padx=20, pady=(5, 5))
+                x, y = divmod(i, 3)
+                button = customtkinter.CTkButton(self.content_frame, text=filename[:-3], width=200)
+                button.grid(row=x, column=y, padx=40, pady=40)
 
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
