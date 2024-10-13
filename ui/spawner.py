@@ -45,4 +45,4 @@ def toggle_engine():
     else:
         with open(ANIM_FILE, 'r') as f:
             anim = f.read().strip()
-        start_engine(animation=anim)
+        start_engine(animation=anim, debug=True)

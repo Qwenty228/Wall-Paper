@@ -46,6 +46,7 @@ class Renderer:
         return tex
 
     def choose_anim(self, path: str = "shaders.circular"):
+        self.animation_name = path
         if 'data' not in path:
             path = f'data.{path}'
         module = importlib.import_module(path)
@@ -95,7 +96,15 @@ class Renderer:
             interval -= dt
             if interval < 0:
                 interval = 2
-
+                try:
+                    with open("anim/anim.txt", 'r') as f:
+                        new_anim = f.read().strip()
+                    if new_anim != self.animation_name:
+                        logging.info(f"New animation selected: {new_anim}")
+                        self.choose_anim(new_anim)
+                except FileNotFoundError as e:
+                    logging.error(e)
+           
                 pause = self.wm.is_foreground_window_fullscreen()
                 if pause:
                     self.wm.hide_workerw()
