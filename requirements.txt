@@ -3,3 +3,4 @@ customtkinter==5.2.2
 moderngl==5.9.0
 imageio==2.33.1
 av==11.0.0
+pywin32==308
