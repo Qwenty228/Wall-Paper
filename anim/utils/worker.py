@@ -110,14 +110,6 @@ class Worker:
         if self.WorkerW:
             win32gui.SendMessage(self.WorkerW, win32con.WM_CLOSE)
 
-    # def toggle_workerw_visibility(self):
-    #     self.hidden = not self.hidden  
-    #     if self.hidden:
-    #         win32gui.ShowWindow(self.WorkerW, 0)
-    #     else:
-    #         win32gui.ShowWindow(self.WorkerW, 1)        
-    #     print(f'workerw visibility: {not self.hidden}')
-
     def hide_workerw(self):
         if not self.hidden:
             win32gui.ShowWindow(self.WorkerW, 0)

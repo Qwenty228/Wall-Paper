@@ -1,4 +1,3 @@
-import imageio.v3 as iio
 import pygame as pg
 import pygame.freetype
 from array import array
@@ -6,10 +5,9 @@ import moderngl
 import win32gui
 import importlib
 from typing import Literal
-import subprocess
 import signal 
-import pickle
-import os
+
+
 
 from utils.worker import Worker
 from utils.settings import *
@@ -125,17 +123,24 @@ class Renderer:
             pg.display.flip()
             frame_tex.release()
 
+# Signal handler to handle termination
+def handle_sigterm(signum, frame):
+    global renderer
+    with open("log.txt", 'w') as f:
+        f.write("clean exit")
 
+    renderer.running = False
+    pg.quit()
+    renderer.wm.kill_workerw()
+    quit()
 
 if __name__ == '__main__':
-    try:
-        r = Renderer(debug=True)
-        r.choose_anim("template.box")
-        r.animate()
-        pg.quit()
-        
-    except Exception as e:
-        print(e)
-    finally:
-        r.wm.kill_workerw()
-        quit()
+    # Register the signal handler in the subprocess
+    signal.signal(signal.SIGINT, handle_sigterm)
+
+    
+    renderer = Renderer(debug=True)
+    renderer.choose_anim("template.box")
+    renderer.animate()
+    
+
