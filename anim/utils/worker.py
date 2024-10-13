@@ -21,7 +21,6 @@ def rect_intersection(rect1, rect2):
     # If there's no overlap
     if right < left or bottom < top:
         return 0
-
     
     # Return the area of the intersection rectangle
     return (right - left) * (bottom - top)
@@ -37,8 +36,6 @@ def intersection(hwnd, threshold=0.95):
     if intersection_area >= threshold * AREA:
         return True
     return False
-
-
 
 
 class Worker:

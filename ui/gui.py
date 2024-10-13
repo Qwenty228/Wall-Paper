@@ -11,19 +11,23 @@ customtkinter.set_appearance_mode("System")
 # Themes: "blue" (standard), "green", "dark-blue"
 customtkinter.set_default_color_theme("blue")
 
-
-
-
 TEMPLATES_DIR = "anim/data/template"
 SHADERS_DIR = "anim/data/shaders"
 VIDEOS_DIR = "anim/data/videos"
+
+ANIM_FILE = "anim/anim.txt"
+def select_animation(anim: str):
+    print("Selected animation", anim)
+    with open(ANIM_FILE, "w") as f:
+        f.write(anim)
+
 
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
         # configure window
-        self.title("CustomTkinter complex_example.py")
+        self.title("Wallpaper Engine")
         self.geometry(f"{1100}x{580}")
 
         self.grid_columnconfigure(1, weight=1)
@@ -97,10 +101,13 @@ class App(customtkinter.CTk):
 
     def display_files_in_frame(self, directory):
         # Get the files in the specified directory and create buttons for them
+        base = os.path.split(directory)[1]
         for i, filename in enumerate(os.listdir(directory)):
             if os.path.isfile(os.path.join(directory, filename)) and filename.endswith(".py"):
                 x, y = divmod(i, 3)
-                button = customtkinter.CTkButton(self.content_frame, text=filename[:-3], width=200)
+                name = filename[:-3]
+                button = customtkinter.CTkButton(self.content_frame, text=name, width=200)
+                button.configure(command=lambda name=name: select_animation(f"{base}.{name}"))
                 button.grid(row=x, column=y, padx=40, pady=40)
 
 

@@ -3,17 +3,14 @@ import subprocess
 import os
 import signal
 
-
-
-
-
+ANIM_FILE = "anim/anim.txt"
 PID_FILE = r"anim/data/pid.txt"
 RENDER_PATH = r"anim\renderer.py"
 # Start the background process for counting
 def start_engine(animation:str = "", debug: bool = False):
     cmd = [sys.executable, RENDER_PATH]
     if animation:
-        cmd.extend('-a', animation)
+        cmd.extend(['-a', animation])
     if debug:
         cmd.append('-d')
     process = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -41,8 +38,11 @@ def stop_counter():
         print("No counter process is running.")
 
 
+
 def toggle_engine():
     if os.path.exists(PID_FILE):
         stop_counter()
     else:
-        start_engine()
+        with open(ANIM_FILE, 'r') as f:
+            anim = f.read().strip()
+        start_engine(animation=anim)
