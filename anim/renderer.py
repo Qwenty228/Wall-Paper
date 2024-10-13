@@ -6,7 +6,7 @@ import win32gui
 import importlib
 from typing import Literal
 import signal 
-
+import logging
 
 
 from utils.worker import Worker
@@ -126,8 +126,7 @@ class Renderer:
 # Signal handler to handle termination
 def handle_sigterm(signum, frame):
     global renderer
-    with open("log.txt", 'w') as f:
-        f.write("clean exit")
+    logging.info("Stopping engine")
 
     renderer.running = False
     pg.quit()
@@ -136,8 +135,16 @@ def handle_sigterm(signum, frame):
 
 if __name__ == '__main__':
     # Register the signal handler in the subprocess
-    signal.signal(signal.SIGINT, handle_sigterm)
+    signal.signal(signal.SIGINT, handle_sigterm) # keyboard interrupt
 
+    # Configure logging
+    logging.basicConfig(
+        filename='wallpaper_engine.log',  # Log to a file
+        level=logging.INFO,  # Set logging level
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+
+    logging.info("Starting engine")
     
     renderer = Renderer(debug=True)
     renderer.choose_anim("template.box")
