@@ -12,17 +12,11 @@ customtkinter.set_appearance_mode("System")
 customtkinter.set_default_color_theme("blue")
 
 
-def get_animations():
-    for file in glob.glob("data/**/*.py", recursive=True):
-        if file.endswith("__init__.py") or file.count("\\") == 1:
-            continue
-        file = file.replace("\\", ".")[:-3]
-        yield file
 
 
-animations = get_animations()
-
-    
+TEMPLATES_DIR = "anim/data/template"
+SHADERS_DIR = "anim/data/shaders"
+VIDEOS_DIR = "anim/data/videos"
 
 class App(customtkinter.CTk):
     ind = 0
@@ -36,7 +30,7 @@ class App(customtkinter.CTk):
 
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure((2, 3), weight=0)
-        self.grid_rowconfigure((0, 1, 2), weight=1)
+        self.grid_rowconfigure((0), weight=1)
 
         self.sidebar_frame = customtkinter.CTkFrame(
             self, width=140, corner_radius=0)
@@ -46,24 +40,70 @@ class App(customtkinter.CTk):
             self.sidebar_frame, text="Wallpaper", font=customtkinter.CTkFont(size=20, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
 
-        self.appearance_mode_label = customtkinter.CTkLabel(
+        appearance_mode_label = customtkinter.CTkLabel(
             self.sidebar_frame, text="Appearance Mode:", anchor="w")
-        self.appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
-        self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark", "System"],
+        appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
+        appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark", "System"],
                                                                        command=self.change_appearance_mode_event)
-        self.appearance_mode_optionemenu.grid(
+        appearance_mode_optionemenu.grid(
             row=6, column=0, padx=20, pady=(10, 10))
-        self.scaling_label = customtkinter.CTkLabel(
+        scaling_label = customtkinter.CTkLabel(
             self.sidebar_frame, text="UI Scaling:", anchor="w")
-        self.scaling_label.grid(row=7, column=0, padx=20, pady=(10, 0))
-        self.scaling_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["80%", "90%", "100%", "110%", "120%"],
+        scaling_label.grid(row=7, column=0, padx=20, pady=(10, 0))
+        scaling_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["80%", "90%", "100%", "110%", "120%"],
                                                                command=self.change_scaling_event)
-        self.scaling_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 20))
+        scaling_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 20))
 
  
-        switch = customtkinter.CTkSwitch(self, text="engine switch", command=lambda : toggle_engine())
-        switch.grid(row=0, column=0, padx=20, pady=20)
+        switch = customtkinter.CTkSwitch(self.sidebar_frame, text="engine switch", command=lambda : toggle_engine())
+        switch.grid(row=1, column=0, padx=20, pady=20)
         switch._check_state = os.path.exists(PID_FILE)
+
+
+        # Page selection buttons
+        self.page_buttons = {
+            "Templates": self.show_templates,
+            "Shaders": self.show_shaders,
+            "Videos": self.show_videos,
+        }
+        button_frame = customtkinter.CTkFrame(self.sidebar_frame)
+        button_frame.grid(row=2, column=0, padx=20, pady=(10, 10))
+        for i, page_name in enumerate(self.page_buttons.keys(), 0):
+            button = customtkinter.CTkButton(button_frame, text=page_name, command=self.page_buttons[page_name])
+            button.grid(row=i, column=0, padx=20, pady=(10, 10))
+
+
+        # Frame to display page content
+        self.content_frame = customtkinter.CTkFrame(self)
+        self.content_frame.grid(row=0, column=1,  padx=10, pady=10, sticky="nsew")
+
+        self.show_templates()
+
+        
+    def show_templates(self):
+        self.clear_content_frame()
+        self.display_files_in_frame(TEMPLATES_DIR)
+
+    def show_shaders(self):
+        self.clear_content_frame()
+        self.display_files_in_frame(SHADERS_DIR)
+
+    def show_videos(self):
+        self.clear_content_frame()
+        self.display_files_in_frame(VIDEOS_DIR)
+
+    def clear_content_frame(self):
+        # Clear the content frame before displaying new content
+        for widget in self.content_frame.winfo_children():
+            widget.destroy()
+
+    def display_files_in_frame(self, directory):
+        # Get the files in the specified directory and create buttons for them
+        for filename in os.listdir(directory):
+            if os.path.isfile(os.path.join(directory, filename)) and filename.endswith(".py"):
+                button = customtkinter.CTkButton(self.content_frame, text=filename)
+                button.pack(padx=20, pady=(5, 5))
+
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)
