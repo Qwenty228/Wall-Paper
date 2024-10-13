@@ -5,13 +5,13 @@ import moderngl
 import win32gui
 import importlib
 from typing import Literal
-import signal 
+import win32con
 import logging
+import argparse
 
 
 from utils.worker import Worker
 from utils.settings import *
-
 
 
 class Renderer:
@@ -30,10 +30,12 @@ class Renderer:
         self.choose_anim()
 
     def __clip_surface(self):
-        # win32gui.ShowWindow(self.wm.WorkerW, win32con.SW_MAXIMIZE)
-        pg.display.set_mode((0, 0), pg.OPENGL | pg.DOUBLEBUF | pg.NOFRAME | pg.SRCALPHA)
+        pg.display.set_mode((0, 0), pg.HIDDEN | pg.OPENGL |
+                            pg.DOUBLEBUF | pg.NOFRAME | pg.SRCALPHA)
+        pg.display.set_mode((0, 0), pg.SHOWN|  pg.OPENGL |
+                            pg.DOUBLEBUF | pg.NOFRAME | pg.SRCALPHA)
         win32gui.SetParent(pg.display.get_wm_info()['window'], self.wm.WorkerW)
-       
+        
 
     def surf2tex(self, surf: pg.Surface, ctx: moderngl.Context,  mode: Literal['clear', 'image'] = 'image'):
         tex = ctx.texture(surf.get_size(), 4)  # number of color channels
@@ -52,12 +54,11 @@ class Renderer:
 
     def get_vao(self, ctx, quad_buffer, animation):
         program = ctx.program(vertex_shader=vert_shader,
-                                      fragment_shader=animation.frag_shader)
+                              fragment_shader=animation.frag_shader)
         vao = ctx.vertex_array(
             program, [(quad_buffer, '2f 2f', 'vert', 'texcoord')]
         )
         return program, vao
-
 
     def animate(self):
         self.__clip_surface()
@@ -79,16 +80,15 @@ class Renderer:
         display = pg.Surface((WIDTH * aspect_ratio, HEIGHT))
 
         pg.event.pump()
-        
+
         interval = 2
         pause = False
         while self.running:
             if current_animation != self.animation:
                 current_animation = self.animation
-                program, vao = self.get_vao(ctx, quad_buffer, current_animation)
-                
-            
-    
+                program, vao = self.get_vao(
+                    ctx, quad_buffer, current_animation)
+
             display.fill('black')
             dt = clock.tick(FPS)*0.001
             self.time += dt
@@ -96,16 +96,16 @@ class Renderer:
             interval -= dt
             if interval < 0:
                 interval = 2
-                
+
                 pause = self.wm.is_foreground_window_fullscreen()
                 if pause:
                     self.wm.hide_workerw()
                     continue
                 else:
                     self.wm.show_workerw()
-        
+
             img = current_animation.update(surf=display, dt=dt,
-                                   aspect_ratio=aspect_ratio)
+                                           aspect_ratio=aspect_ratio)
             if img:
                 display = img
             if self.debug:
@@ -123,20 +123,8 @@ class Renderer:
             pg.display.flip()
             frame_tex.release()
 
-# Signal handler to handle termination
-def handle_sigterm(signum, frame):
-    global renderer
-    logging.info("Stopping engine")
-
-    renderer.running = False
-    pg.quit()
-    renderer.wm.kill_workerw()
-    quit()
 
 if __name__ == '__main__':
-    # Register the signal handler in the subprocess
-    signal.signal(signal.SIGINT, handle_sigterm) # keyboard interrupt
-
     # Configure logging
     logging.basicConfig(
         filename='wallpaper_engine.log',  # Log to a file
@@ -145,9 +133,23 @@ if __name__ == '__main__':
     )
 
     logging.info("Starting engine")
-    
-    renderer = Renderer(debug=True)
-    renderer.choose_anim("template.box")
-    renderer.animate()
-    
 
+    parser = argparse.ArgumentParser(prog='Wallpaper Engine',
+                                     description='A wallpaper engine for Windows, powered by Tkinter and Pygame.',
+                                     epilog='Enjoy the wallpaper engine!')
+    parser.add_argument('-d', '--debug', action='store_true',
+                        help='Enable debug mode')
+    parser.add_argument("-a", "--animation", type=str,
+                        default="shaders.circular")
+    parser.add_argument("-c", "--clear", action="store_true")
+
+    args = parser.parse_args()
+
+    renderer = Renderer(debug=args.debug)
+
+    if args.clear:
+        renderer.wm.kill_workerw()
+    else:
+        renderer.choose_anim(args.animation)
+
+        renderer.animate()
