@@ -3,10 +3,13 @@ import pygame as pg
 import pygame.freetype
 from array import array
 import moderngl
-import numpy as np
 import win32gui
 import importlib
 from typing import Literal
+import subprocess
+import signal 
+import pickle
+import os
 
 from utils.worker import Worker
 from utils.settings import *
@@ -25,7 +28,6 @@ class Renderer:
 
         self.time = 0
         self.running = True
-        self.on_pause = False
 
         self.choose_anim()
 
@@ -58,7 +60,6 @@ class Renderer:
         )
         return program, vao
 
-        
 
     def animate(self):
         self.__clip_surface()
@@ -81,20 +82,30 @@ class Renderer:
 
         pg.event.pump()
         
+        interval = 2
+        pause = False
         while self.running:
             if current_animation != self.animation:
                 current_animation = self.animation
                 program, vao = self.get_vao(ctx, quad_buffer, current_animation)
                 
             
-            if self.on_pause:
-                # print('unpaused')
-                self.wm.toggle_workerw_visibility()
-                continue
-            
+    
             display.fill('black')
             dt = clock.tick(FPS)*0.001
             self.time += dt
+
+            interval -= dt
+            if interval < 0:
+                interval = 2
+                
+                pause = self.wm.is_foreground_window_fullscreen()
+                if pause:
+                    self.wm.hide_workerw()
+                    continue
+                else:
+                    self.wm.show_workerw()
+        
             img = current_animation.update(surf=display, dt=dt,
                                    aspect_ratio=aspect_ratio)
             if img:
@@ -119,6 +130,7 @@ class Renderer:
 if __name__ == '__main__':
     try:
         r = Renderer(debug=True)
+        r.choose_anim("template.box")
         r.animate()
         pg.quit()
         

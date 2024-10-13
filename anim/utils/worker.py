@@ -1,24 +1,60 @@
 import ctypes
-import win32con, win32gui
+import win32con, win32gui, win32api
+
+# Set DPI awareness
+ctypes.windll.user32.SetProcessDPIAware()
+# Constants for screen metrics
+SM_CXSCREEN = 0
+SM_CYSCREEN = 1
+
+WIDTH, HEIGHT =  win32api.GetSystemMetrics(SM_CXSCREEN), win32api.GetSystemMetrics(SM_CYSCREEN)
+
+AREA = WIDTH * HEIGHT
+
+# Function to calculate the intersection area of two rectangles
+def rect_intersection(rect1, rect2):
+    left = max(rect1[0], rect2[0])
+    top = max(rect1[1], rect2[1])
+    right = min(rect1[2], rect2[2])
+    bottom = min(rect1[3], rect2[3])
+    
+    # If there's no overlap
+    if right < left or bottom < top:
+        return 0
+
+    
+    # Return the area of the intersection rectangle
+    return (right - left) * (bottom - top)
+
+def intersection(hwnd, threshold=0.95):
+    # Get window rectangle
+    window_rect = win32gui.GetWindowRect(hwnd)
+    
+    # Calculate intersection area between window and screen
+    intersection_area = rect_intersection((0, 0, WIDTH, HEIGHT), window_rect)
+    
+    # Check if the intersection area is at least 90% of the screen area
+    if intersection_area >= threshold * AREA:
+        return True
+    return False
+
+
 
 
 class Worker:
     def __init__(self) -> None:
-        self.user32 = ctypes.windll.user32
-        self.user32.SetProcessDPIAware()
         self.WorkerW = None
         self.hidden = False
-        self.full_screen_rect = (0, 0, self.user32.GetSystemMetrics(0), self.user32.GetSystemMetrics(1))
-
-
-    def is_full_screen(self):
-        try:
-            hWnd = self.user32.GetForegroundWindow()
-            rect = win32gui.GetWindowRect(hWnd)
-            return rect == self.full_screen_rect
-        except:
-            return False
-
+    
+    def is_foreground_window_fullscreen(self):
+        """Function to check if the foreground window is fullscreen"""
+        # Get the foreground window
+        hwnd = win32gui.GetForegroundWindow()
+        name = win32gui.GetWindowText(hwnd).strip()
+        if hwnd and (name != "pygame window"):
+            # Check if the foreground window covers the entire screen
+            return intersection(hwnd)
+        return False
 
     def set_workerw(self, hwnd, extra):
         """Set the hwnd of correct WorkerW instance."""
@@ -74,10 +110,20 @@ class Worker:
         if self.WorkerW:
             win32gui.SendMessage(self.WorkerW, win32con.WM_CLOSE)
 
-    def toggle_workerw_visibility(self):
-        self.hidden = not self.hidden  
-        if self.hidden:
+    # def toggle_workerw_visibility(self):
+    #     self.hidden = not self.hidden  
+    #     if self.hidden:
+    #         win32gui.ShowWindow(self.WorkerW, 0)
+    #     else:
+    #         win32gui.ShowWindow(self.WorkerW, 1)        
+    #     print(f'workerw visibility: {not self.hidden}')
+
+    def hide_workerw(self):
+        if not self.hidden:
             win32gui.ShowWindow(self.WorkerW, 0)
-        else:
-            win32gui.ShowWindow(self.WorkerW, 1)        
-        print(f'workerw visibility: {not self.hidden}')
+            self.hidden = True
+
+    def show_workerw(self):
+        if self.hidden:
+            self.hidden = False
+            win32gui.ShowWindow(self.WorkerW, 1)
