@@ -44,7 +44,7 @@ class Renderer:
             # no interpolation
             tex.filter = (moderngl.NEAREST, moderngl.NEAREST)
             tex.swizzle = 'BGRA'  # gl differs from pygame, so we have to swizzle the colors
-            tex.write(surf.get_view('1'))  # write the surface to the texture
+        tex.write(surf.get_view('1'))  # write the surface to the texture
         return tex
 
     def choose_anim(self, path: str = "shaders.circular"):
@@ -85,22 +85,11 @@ class Renderer:
 
         interval = 2
         pause = False
-
-        if self.make_th:
-            # Create a framebuffer to render to
-            framebuffer = ctx.framebuffer(color_attachments=[ctx.texture((WIDTH, HEIGHT), 4)])
-            framebuffer.use()  # Bind the framebuffer
-
         while self.running:
-            if current_animation != self.animation:
-                current_animation = self.animation
-                program, vao = self.get_vao(
-                    ctx, quad_buffer, current_animation)
-
             display.fill('black')
+
             dt = clock.tick(FPS)*0.001
             self.time += dt
-
             interval -= dt
             if interval < 0:
                 interval = 2
@@ -110,6 +99,11 @@ class Renderer:
                     if new_anim != self.animation_name:
                         logging.info(f"New animation selected: {new_anim}")
                         self.choose_anim(new_anim)
+
+                        current_animation = self.animation
+                        program, vao = self.get_vao(
+                            ctx, quad_buffer, current_animation)
+
                 except FileNotFoundError as e:
                     logging.error(e)
 
@@ -124,11 +118,11 @@ class Renderer:
                                            aspect_ratio=aspect_ratio)
             if img:
                 display = img
-                
-            if self.time > 3:
-                if self.make_th:
+
+            if self.make_th:
+                if self.time > 3:
                     logging.info(f"Making thumbnail: {self.make_th}")
-                    pg.image.save(display, f"anim/data/images/{self.make_th}.png")
+                    # pg.image.save(display, f"anim/data/images/{self.make_th}.png")
                     # pixels = frame_tex.read()
                     # image = Image.frombytes('RGB', (HEIGHT, WIDTH), pixels)
 
@@ -143,13 +137,12 @@ class Renderer:
                 frame_tex = self.surf2tex(display, ctx)
             else:
                 frame_tex = self.surf2tex(display, ctx, current_animation.mode)
+
             frame_tex.use(0)
             program['tex'] = 0
             current_animation.set_uniforms(
                 program, time=self.time, aspect_ratio=aspect_ratio)
             vao.render(mode=moderngl.TRIANGLE_STRIP)
-
-            
 
             pg.display.flip()
             frame_tex.release()
@@ -191,8 +184,8 @@ if __name__ == '__main__':
         renderer.choose_anim(args.animation)
         try:
             fn = args.animation.replace('.', '_')
-            if not check_thumbnails(fn):
-                renderer.make_th = fn
+            # if not check_thumbnails(fn):
+            # renderer.make_th = fn
             logging.info(f"thumbnail: {fn}")
         except Exception as e:
             logging.error(e)
