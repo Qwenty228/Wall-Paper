@@ -1,5 +1,7 @@
 import ctypes
 import win32con, win32gui, win32api
+import logging
+
 
 # Set DPI awareness
 ctypes.windll.user32.SetProcessDPIAware()
@@ -26,9 +28,13 @@ def rect_intersection(rect1, rect2):
     return (right - left) * (bottom - top)
 
 def intersection(hwnd, threshold=0.95):
+    name = win32gui.GetWindowText(hwnd).strip()
+    if name in ("", "pygame window"): 
+        return False
+
+
     # Get window rectangle
     window_rect = win32gui.GetWindowRect(hwnd)
-    
     # Calculate intersection area between window and screen
     intersection_area = rect_intersection((0, 0, WIDTH, HEIGHT), window_rect)
     
@@ -47,8 +53,7 @@ class Worker:
         """Function to check if the foreground window is fullscreen"""
         # Get the foreground window
         hwnd = win32gui.GetForegroundWindow()
-        name = win32gui.GetWindowText(hwnd).strip()
-        if hwnd and (name != "pygame window"):
+        if hwnd:
             # Check if the foreground window covers the entire screen
             return intersection(hwnd)
         return False
