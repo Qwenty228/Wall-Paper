@@ -20,8 +20,7 @@ This is a customizable wallpaper engine built with `pygame`, `moderngl`, and `tk
 - **Background Integration**:
   - Uses `pywin32` to clip the `pygame` display into the Windows desktop background. This allows the wallpaper engine to run seamlessly behind other applications, as if it were a native desktop background.
 
-
-## Setup
+## Usage
 
 1. **Install Dependencies**:
    Make sure you have Python 3.8+ installed. Install the necessary packages by running:
@@ -42,4 +41,16 @@ This is a customizable wallpaper engine built with `pygame`, `moderngl`, and `tk
    - Add new pygame-based animation templates in the `anim/data/template/` folder.
    <!-- - Add video files to `anim/data/videos/` for video wallpapers. -->
 
+3. **UI Control:**
+   - You can adjust settings like appearance mode (Light/Dark) and UI scaling.
+   - Buttons corresponding to files in the `shaders`, `templates`, and `videos` directories are shown in the GUI, allowing you to switch between animations.
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/822281d7-1293-414f-8210-d9e1a910bb23" width="300"/>
+  <img src="https://github.com/user-attachments/assets/c6b6566b-16e7-4835-b356-fb32fce8b553" />
+</p>
+
+4. **Engine Controls:**
+   - The engine renders the wallpaper in the background.
+   - It automatically pauses when a fullscreen application is detected using `pywin32`.
+   - You can toggle the engine on/off using the switch in the GUI.
 
