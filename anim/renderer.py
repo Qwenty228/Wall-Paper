@@ -7,7 +7,9 @@ import importlib
 from typing import Literal
 import logging
 import argparse
-
+import os
+import glob
+from PIL import Image
 
 from utils.worker import Worker
 from utils.settings import *
@@ -26,15 +28,15 @@ class Renderer:
         self.time = 0
         self.running = True
 
+        self.make_th = None
         self.choose_anim()
 
     def __clip_surface(self):
         pg.display.set_mode((0, 0), pg.HIDDEN | pg.OPENGL |
                             pg.DOUBLEBUF | pg.NOFRAME | pg.SRCALPHA)
-        pg.display.set_mode((0, 0), pg.SHOWN|  pg.OPENGL |
+        pg.display.set_mode((0, 0), pg.SHOWN | pg.OPENGL |
                             pg.DOUBLEBUF | pg.NOFRAME | pg.SRCALPHA)
         win32gui.SetParent(pg.display.get_wm_info()['window'], self.wm.WorkerW)
-        
 
     def surf2tex(self, surf: pg.Surface, ctx: moderngl.Context,  mode: Literal['clear', 'image'] = 'image'):
         tex = ctx.texture(surf.get_size(), 4)  # number of color channels
@@ -83,6 +85,12 @@ class Renderer:
 
         interval = 2
         pause = False
+
+        if self.make_th:
+            # Create a framebuffer to render to
+            framebuffer = ctx.framebuffer(color_attachments=[ctx.texture((WIDTH, HEIGHT), 4)])
+            framebuffer.use()  # Bind the framebuffer
+
         while self.running:
             if current_animation != self.animation:
                 current_animation = self.animation
@@ -104,7 +112,7 @@ class Renderer:
                         self.choose_anim(new_anim)
                 except FileNotFoundError as e:
                     logging.error(e)
-           
+
                 pause = self.wm.is_foreground_window_fullscreen()
                 if pause:
                     self.wm.hide_workerw()
@@ -116,6 +124,19 @@ class Renderer:
                                            aspect_ratio=aspect_ratio)
             if img:
                 display = img
+                
+            if self.time > 3:
+                if self.make_th:
+                    logging.info(f"Making thumbnail: {self.make_th}")
+                    pg.image.save(display, f"anim/data/images/{self.make_th}.png")
+                    # pixels = frame_tex.read()
+                    # image = Image.frombytes('RGB', (HEIGHT, WIDTH), pixels)
+
+                    # # Save the frame to a PNG file
+                    # image.save(f"anim/data/images/{self.make_th}.png")
+
+                    self.make_th = None
+
             if self.debug:
                 self.font.render_to(
                     display, (0.5*WIDTH*aspect_ratio, 0), f'FPS: {clock.get_fps():.2f}', 'white')
@@ -128,8 +149,17 @@ class Renderer:
                 program, time=self.time, aspect_ratio=aspect_ratio)
             vao.render(mode=moderngl.TRIANGLE_STRIP)
 
+            
+
             pg.display.flip()
             frame_tex.release()
+
+
+def check_thumbnails(filename: str):
+    # Define the folder where the images are stored
+    image_folder = 'anim/data/images'
+
+    return glob.glob(os.path.join(image_folder, f'{filename}.*'))
 
 
 if __name__ == '__main__':
@@ -159,5 +189,12 @@ if __name__ == '__main__':
         renderer.wm.kill_workerw()
     else:
         renderer.choose_anim(args.animation)
+        try:
+            fn = args.animation.replace('.', '_')
+            if not check_thumbnails(fn):
+                renderer.make_th = fn
+            logging.info(f"thumbnail: {fn}")
+        except Exception as e:
+            logging.error(e)
 
         renderer.animate()

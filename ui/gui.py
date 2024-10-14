@@ -1,8 +1,8 @@
 import tkinter
 import tkinter.messagebox
 import customtkinter
-import glob
 import os 
+from PIL import ImageTk, Image
 
 from .spawner import toggle_engine, PID_FILE
 
@@ -21,6 +21,24 @@ def select_animation(anim: str):
     with open(ANIM_FILE, "w") as f:
         f.write(anim)
 
+
+def get_thumbnail(directory: str):
+    # Open the image file
+    img = Image.open(directory)
+
+    # Get the original dimensions of the image
+    width, height = img.size
+
+    # Set the desired width, keeping the aspect ratio
+    new_width = 200
+    new_height = int((new_width / width) * height)
+
+    # Resize the image with the new width and calculated height
+    img_resized = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+    
+    # Convert to ImageTk format
+    return customtkinter.CTkImage(light_image=img_resized)
 
 class App(customtkinter.CTk):
     def __init__(self):
@@ -104,9 +122,14 @@ class App(customtkinter.CTk):
         base = os.path.split(directory)[1]
         for i, filename in enumerate(os.listdir(directory)):
             if os.path.isfile(os.path.join(directory, filename)) and filename.endswith(".py"):
-                x, y = divmod(i, 3)
                 name = filename[:-3]
-                button = customtkinter.CTkButton(self.content_frame, text=name, width=200)
+                img = os.path.join("anim/data/images", f"{base}_{name}.png")
+                if os.path.exists(img):
+                    img = get_thumbnail(img)
+                    button = customtkinter.CTkButton(self.content_frame, text=name, width=200, image=img, compound="top")
+                else:
+                    button = customtkinter.CTkButton(self.content_frame, text=name, width=200)
+                x, y = divmod(i, 3)
                 button.configure(command=lambda name=name: select_animation(f"{base}.{name}"))
                 button.grid(row=x, column=y, padx=40, pady=40)
 
