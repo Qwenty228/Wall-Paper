@@ -33,12 +33,8 @@ def get_thumbnail(directory: str):
     new_width = 200
     new_height = int((new_width / width) * height)
 
-    # Resize the image with the new width and calculated height
-    img_resized = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
-
-    
     # Convert to ImageTk format
-    return customtkinter.CTkImage(light_image=img_resized)
+    return customtkinter.CTkImage(light_image=img, size=(new_width, new_height))
 
 class App(customtkinter.CTk):
     def __init__(self):
